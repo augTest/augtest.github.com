@@ -1,0 +1,39 @@
+Generic options:
+    NAME             DESC                                        REQUIRED
+     dp            model path                                      true
+     cp         cluster path                                    false
+     s            similarity, pearson(相关系数, default), cos(余弦), euc(欧式)   false
+     h            how many to recommend, default 10                                false
+
+knn:
+content based(为一个item找一个最相似的item). 最好加上聚类路径(cp)
+    options:
+        u        recommend item(book)            true 
+    command:
+        hadoop jar recommendation-0.0.1-SNAPSHOT.jar knn -dp  /user/danny/recommendation/data/douban/book-tag  -cp   /user/danny/cluster/kmeans/douban/book-tag-unscale -u  book-id
+
+knnc:
+通过计算 item-tag 和 user-tag 的相似度来判断user和item的相似度
+    options:
+        mp        model path(item-tag path)                  true 
+        sv        source vector id(item id)            true 
+        dis        distance measure             false 
+    command:
+        hadoop jar recommendation-0.0.1-SNAPSHOT.jar knnc -dp  /user/danny/recommendation/data/douban/people-tag -mp /user/danny/recommendation/data/douban/book-tag  -sv  book_id -dis tag
+
+user:
+user based CF.
+    options:
+        u        recommend user            true 
+        n        number of neighborhood,    default 10         false 
+    command:
+        hadoop jar recommendation-0.0.1-SNAPSHOT.jar user -dp  /user/danny/recommendation/data/douban/people-book   -u  user-id 
+        (加上选项cp是指用某一个簇里的用户来做协同推荐, 而这个簇里的用户是经过people-tag模型聚类过的(也就是说这个簇里的用户都倾向于读相同类型的书)。因为有时候人们更倾向于让口味相同的人来推荐. 不确定这样是否更合理)
+        hadoop jar recommendation-0.0.1-SNAPSHOT.jar user -dp  /user/danny/recommendation/data/douban/people-book  -cp  /user/danny/cluster/kmeans/douban/people-tag -u  user-id 
+        
+item:
+item based CF.
+    options:
+        u        recommend user            true 
+    command:
+        hadoop jar recommendation-0.0.1-SNAPSHOT.jar item -dp  /user/danny/recommendation/data/douban/people-book   -u  user-id
